@@ -18,6 +18,14 @@ const createApplicationSchema = z.object({
   notes: z.string().optional(),
 });
 
+/**
+ * Zod schema for listing job applications with pagination.
+ */
+const listApplicationsSchema = z.object({
+  page: z.number().int().min(1).default(1),
+  limit: z.number().int().min(1).max(100).default(20),
+});
+
 export const applicationsRouter = router({
   /**
    * Create a new job application for the authenticated user.
@@ -79,5 +87,43 @@ export const applicationsRouter = router({
           message: "Something went wrong. Please try again.",
         });
       }
+    }),
+
+  /**
+   * List job applications for the authenticated user.
+   * Supports pagination and returns total count.
+   */
+  list: protectedProcedure
+    .input(listApplicationsSchema)
+    .query(async ({ ctx, input }) => {
+      // Resolve local User record from Kinde ID
+      const dbUser = await prisma.user.findUnique({
+        where: { kindeId: ctx.user.id },
+      });
+
+      if (!dbUser) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User account not found.",
+        });
+      }
+
+      // Fetch items and total count in parallel
+      const [items, totalCount] = await Promise.all([
+        prisma.application.findMany({
+          where: { userId: dbUser.id },
+          orderBy: { dateApplied: "desc" },
+          skip: (input.page - 1) * input.limit,
+          take: input.limit,
+        }),
+        prisma.application.count({
+          where: { userId: dbUser.id },
+        }),
+      ]);
+
+      return {
+        items,
+        totalCount,
+      };
     }),
 });
