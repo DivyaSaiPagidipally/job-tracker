@@ -40,7 +40,7 @@ No schema changes are required as the `Application` and `User` models were estab
 
 #### [NEW] `ApplicationList.tsx`
 *   Main container component for the applications section.
-*   Handles pagination state (`page`) and calls `trpc.application.list.useQuery({ page, limit: 20 })`.
+*   Handles pagination and status state. All statuses uses `trpc.application.list.useQuery({ page, limit: 20 })`; a selected status loads all list pages in batches of 100 through tRPC, filters locally, and paginates matches at 20 per page. Filter changes reset the page, and incomplete or failed batches never display partial matches.
 *   Conditional rendering logic:
     - If `isLoading`: Render `ApplicationTableSkeleton`.
     - If `data.totalCount === 0`: Render the existing empty state.

@@ -20,6 +20,13 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Applications list
+
+Use the status dropdown above the applications table to show one status, or
+select **All statuses** to restore the full list. The count and pagination
+reflect the selection. Filtering loads all list pages before showing matches;
+large lists may take longer to load.
+
 ## Application API
 
 The protected tRPC mutation `application.updateStatus` accepts
@@ -29,8 +36,8 @@ Status must be one of `APPLIED`, `INTERVIEW_SCHEDULED`, `INTERVIEW_DONE`,
 application can be updated; a missing or another user's application returns
 `NOT_FOUND`. A missing local user returns `UNAUTHORIZED`.
 
-Run router tests with `npm test`; they use a mocked Prisma client and need no
-database connection.
+Run tests with `npm test`; router and list component tests use mocked dependencies
+and need no database connection.
 
 ## Learn More
 

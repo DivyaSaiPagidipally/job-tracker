@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { ApplicationStatus } from "@/app/generated/prisma";
 import Link from "next/link";
 import { trpc } from "@/lib/trpc";
 import { ApplicationTable } from "./ApplicationTable";
@@ -9,18 +11,50 @@ import { Pagination } from "./Pagination";
 
 /**
  * Orchestrator component for the applications list.
- * Manages fetching, pagination state, and empty/loading views.
+ * Manages fetching, status filtering, pagination, and empty/loading views.
  */
 export function ApplicationList() {
   const [page, setPage] = useState(1);
+  const [status, setStatus] = useState<ApplicationStatus | "">("");
   const limit = 20;
+  const batchSize = 100;
 
-  // Fetch applications with pagination
-  const { data, isLoading, isPlaceholderData } = trpc.application.list.useQuery(
+  const allQuery = trpc.application.list.useQuery(
     { page, limit },
-    { placeholderData: (previousData) => previousData }
+    { enabled: !status, placeholderData: (previousData) => previousData }
   );
+  // The list endpoint has no status input, so collect all pages before filtering.
+  const firstBatch = trpc.application.list.useQuery(
+    { page: 1, limit: batchSize },
+    { enabled: !!status }
+  );
+  const batchCount = status && firstBatch.data ? Math.ceil(firstBatch.data.totalCount / batchSize) : 0;
+  const remainingBatches = trpc.useQueries((t) =>
+    Array.from({ length: Math.max(0, batchCount - 1) }, (_, index) =>
+      t.application.list({ page: index + 2, limit: batchSize })
+    )
+  );
+  const filterError = status && (firstBatch.error || remainingBatches.find((batch) => batch.error)?.error);
+  useEffect(() => {
+    if (filterError) {
+      console.error("[ApplicationList.filter]", filterError);
+      toast.error("Could not filter applications. Please try again.");
+    }
+  }, [filterError]);
 
+  const filterLoading = !!status && !filterError && (
+    !firstBatch.data || remainingBatches.some((batch) => !batch.data)
+  );
+  const filteredItems = status && firstBatch.data && !filterLoading && !filterError
+    ? [firstBatch.data, ...remainingBatches.map((batch) => batch.data!)].flatMap((batch) => batch.items).filter((item) => item.status === status)
+    : [];
+  const data = status
+    ? firstBatch.data && !filterLoading && !filterError
+      ? { items: filteredItems.slice((page - 1) * limit, page * limit), totalCount: filteredItems.length }
+      : undefined
+    : allQuery.data;
+  const isLoading = status ? filterLoading : allQuery.isLoading;
+  const isPlaceholderData = !status && allQuery.isPlaceholderData;
   const totalPages = data ? Math.ceil(data.totalCount / limit) : 0;
 
   return (
@@ -51,10 +85,36 @@ export function ApplicationList() {
         </Link>
       </div>
 
+      <div className="flex flex-col gap-1.5 sm:w-64">
+        <label htmlFor="status-filter" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          Filter by status
+        </label>
+        <select
+          id="status-filter"
+          value={status}
+          onChange={(event) => {
+            setStatus(event.target.value as ApplicationStatus | "");
+            setPage(1);
+          }}
+          className="rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 shadow-sm"
+        >
+          <option value="">All statuses</option>
+          {Object.values(ApplicationStatus).map((value) => (
+            <option key={value} value={value}>
+              {value.split("_").map((word) => word[0] + word.slice(1).toLowerCase()).join(" ")}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {/* ── Content Area ────────────────────────────────────────────── */}
       <div className={isPlaceholderData ? "opacity-50 pointer-events-none" : ""}>
         {isLoading && !data ? (
           <ApplicationTableSkeleton />
+        ) : filterError ? (
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">Could not filter applications. Please try again.</p>
+        ) : status && data?.totalCount === 0 ? (
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">No applications match this status.</p>
         ) : data?.totalCount === 0 ? (
           <div className="p-12 bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-800 text-center">
             <div className="max-w-xs mx-auto">

@@ -45,6 +45,11 @@ Each status is visually distinguished by a badge colour that fits the existing d
 - Displays **"Your Applications (N)"** where `N` is the total count of all applications for the user (not just the current page).
 - The existing "Add Application" button remains in the top-right of this section.
 
+### Status Filter
+- A dropdown above the table offers **All statuses** and every application status.
+- Selecting a status shows matching applications across all pages; the count and pagination reflect the matches. Selecting **All statuses** restores the full list.
+- A status with no matches displays a separate empty message. Changing the filter resets pagination to page 1.
+
 ### Empty State
 - Preserved exactly as-is from the current dashboard when the user has **zero** applications:
   > *"No applications yet. Add your first one →"*
@@ -80,7 +85,7 @@ Each status is visually distinguished by a badge colour that fits the existing d
 ## Out of Scope
 - Clicking a row to navigate to a detail or edit page (future feature).
 - Sorting the table by any column other than `dateApplied` (covered in **07-search-filter**).
-- Filtering or searching applications (covered in **07-search-filter**).
+- Searching applications or filtering by fields other than status (covered in **07-search-filter**).
 - Inline editing of any field directly from the table.
 - Displaying `jobUrl` or `notes` in the list view.
 - Exporting the table to CSV or any other format.
