@@ -48,7 +48,7 @@ No schema changes are required as the `Application` and `User` models were estab
 
 #### [NEW] `ApplicationTable.tsx`
 *   Stateless component rendering the HTML `<table>` structure.
-*   Implements the 6-column layout (Company, Role, Status, Date, Location, Salary).
+*   Implements the 7-column layout (Company, Role, Job URL, Status, Date, Location, Salary). Job URLs link to the posting in a new tab with `noopener noreferrer`; missing URLs display `—`.
 *   Maps through `applications` to render `ApplicationRow`.
 *   Uses `date-fns` (or standard `Intl.DateTimeFormat`) for readable date formatting (`09 Apr 2026`).
 *   Implements the salary formatting logic: `₹{min}L – ₹{max}L`.

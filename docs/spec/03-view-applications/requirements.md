@@ -21,6 +21,7 @@ The applications table displays the following columns, in order:
 |---|---|---|
 | **Company** | `companyName` | Plain text |
 | **Role** | `jobTitle` | Plain text |
+| **Job URL** | `jobUrl` | URL link opening in a new tab; `—` if empty |
 | **Status** | `status` | Colour-coded badge |
 | **Date Applied** | `dateApplied` | Readable: `09 Apr 2026` |
 | **Location** | `location` | Plain text, `—` if empty |
@@ -64,8 +65,8 @@ Each status is visually distinguished by a badge colour that fits the existing d
 
 - **AC1 — Data scope:** The table only ever shows applications belonging to the currently authenticated user. No cross-user data leakage is possible.
 - **AC2 — Sort order:** Applications are always returned sorted by `dateApplied` descending (newest first).
-- **AC3 — Columns displayed:** The table renders exactly six columns: Company, Role, Status, Date Applied, Location, Salary Range.
-- **AC4 — Hidden fields:** `jobUrl` and `notes` are not shown in the table.
+- **AC3 — Columns displayed:** The table renders seven columns: Company, Role, Job URL, Status, Date Applied, Location, Salary Range.
+- **AC4 — Hidden fields:** `notes` is not shown in the table. Job URLs open in a new tab with `rel="noopener noreferrer"`; missing URLs display `—`.
 - **AC5 — Empty state:** When the user has zero applications, the existing empty-state message is shown and no table is rendered.
 - **AC6 — Loading state:** Skeleton rows are displayed while the data fetch is in progress.
 - **AC7 — Total count:** The section heading reads "Your Applications (N)" reflecting the accurate total, not just the page count.
@@ -82,6 +83,6 @@ Each status is visually distinguished by a badge colour that fits the existing d
 - Sorting the table by any column other than `dateApplied` (covered in **07-search-filter**).
 - Filtering or searching applications (covered in **07-search-filter**).
 - Inline editing of any field directly from the table.
-- Displaying `jobUrl` or `notes` in the list view.
+- Displaying `notes` in the list view.
 - Exporting the table to CSV or any other format.
 - Infinite scroll as an alternative to pagination.

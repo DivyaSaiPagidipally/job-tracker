@@ -2,10 +2,11 @@ import { ApplicationStatus } from "@/app/generated/prisma";
 import { StatusBadge } from "./StatusBadge";
 
 // Define a version of Application where Dates can be strings (serialized tRPC response)
-type SerializedApplication = Omit<any, "dateApplied" | "createdAt" | "updatedAt"> & {
+type SerializedApplication = {
   id: string;
   companyName: string;
   jobTitle: string;
+  jobUrl: string | null;
   dateApplied: Date | string;
   status: ApplicationStatus;
   location: string | null;
@@ -59,6 +60,9 @@ export function ApplicationTable({ applications }: ApplicationTableProps) {
                 Role
               </th>
               <th className="px-6 py-4 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                Job URL
+              </th>
+              <th className="px-6 py-4 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                 Status
               </th>
               <th className="px-6 py-4 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
@@ -87,6 +91,18 @@ export function ApplicationTable({ applications }: ApplicationTableProps) {
                   <span className="text-zinc-600 dark:text-zinc-400">
                     {app.jobTitle}
                   </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
+                  {app.jobUrl ? (
+                    <a
+                      href={app.jobUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline underline-offset-2 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
+                    >
+                      {app.jobUrl}
+                    </a>
+                  ) : "—"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <StatusBadge status={app.status} />
