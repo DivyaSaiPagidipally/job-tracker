@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../trpc";
 import { prisma } from "@/lib/db";
+import { ApplicationStatus } from "@/app/generated/prisma";
 
 /**
  * Zod schema for creating a new job application.
@@ -82,6 +83,40 @@ export const applicationsRouter = router({
         }
         // Log unexpected errors and surface a safe message
         console.error("[applications.create]", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong. Please try again.",
+        });
+      }
+    }),
+
+  /**
+   * Update the status of an application owned by the authenticated user.
+   */
+  updateStatus: protectedProcedure
+    .input(z.object({ id: z.string(), status: z.enum(ApplicationStatus) }))
+    .mutation(async ({ ctx, input }) => {
+      const dbUser = await prisma.user.findUnique({
+        where: { kindeId: ctx.user.id },
+      });
+
+      if (!dbUser) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User account not found.",
+        });
+      }
+
+      try {
+        return await prisma.application.update({
+          where: { id: input.id, userId: dbUser.id },
+          data: { status: input.status },
+        });
+      } catch (error: unknown) {
+        if (typeof error === "object" && error !== null && "code" in error && error.code === "P2025") {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Application not found." });
+        }
+        console.error("[applications.updateStatus]", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Something went wrong. Please try again.",

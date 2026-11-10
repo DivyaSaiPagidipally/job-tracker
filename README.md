@@ -20,6 +20,18 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Application API
+
+The protected tRPC mutation `application.updateStatus` accepts
+`{ id: string, status: ApplicationStatus }` and returns the updated application.
+Status must be one of `APPLIED`, `INTERVIEW_SCHEDULED`, `INTERVIEW_DONE`,
+`OFFER_RECEIVED`, `REJECTED`, `ACCEPTED`, or `WITHDRAWN`. Only the owner's
+application can be updated; a missing or another user's application returns
+`NOT_FOUND`. A missing local user returns `UNAUTHORIZED`.
+
+Run router tests with `npm test`; they use a mocked Prisma client and need no
+database connection.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
